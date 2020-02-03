@@ -1,4 +1,4 @@
-# Infomaniak Login Lib
+# Infomaniak Login Library
 
 Library to simplify login process with Infomaniak oauth 2.0 protocol
 
