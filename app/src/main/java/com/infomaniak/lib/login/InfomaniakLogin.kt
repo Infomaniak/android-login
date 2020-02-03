@@ -16,6 +16,11 @@ import androidx.browser.customtabs.CustomTabsServiceConnection
 import java.security.MessageDigest
 import java.security.SecureRandom
 
+/**
+ * Class which consists to create and manage an oauth 2.0 connection through Infomaniak Process
+ * Supports PKCE challenge and legacy browser
+ * Author : Infomaniak Network SA (Kilian P.)
+ */
 class InfomaniakLogin(
     private val context: Context,
     private val clientId: String,
@@ -27,6 +32,8 @@ class InfomaniakLogin(
         private const val LOGIN_URL = "https://login.infomaniak.com/authorize/"
         private const val DEFAULT_RESPONSE_TYPE = "code"
         private const val DEFAULT_ACCESS_TYPE = "offline"
+        private const val DEFAULT_HASH_MODE = "SHA-256"
+        private const val DEFAULT_HASH_MODE_SHORT = "S256"
     }
 
     private lateinit var codeChallengeMethod: String
@@ -52,6 +59,9 @@ class InfomaniakLogin(
         generateUrl()
     }
 
+    /**
+     * Officially start the Chrome Tab
+     */
     fun start(): Boolean {
         var success = false
         if (URLUtil.isValidUrl(loginUrl)) {
@@ -65,6 +75,9 @@ class InfomaniakLogin(
         return success
     }
 
+    /**
+     * Unbind the custom tab (close the connection)
+     */
     private fun unbind() {
         try {
             context.unbindService(tabConnection!!)
@@ -73,6 +86,9 @@ class InfomaniakLogin(
         }
     }
 
+    /**
+     * Instead of Chrome Custom Tab, create a tab in the default browser
+     */
     private fun showOnDefaultBrowser(url: String): Boolean {
         val intent = Intent(Intent.ACTION_VIEW).apply {
             data = Uri.parse(url)
@@ -88,6 +104,10 @@ class InfomaniakLogin(
         }
     }
 
+    /**
+     * Bind the custom tab to the current context (modern method)
+     * @url String : URL of the login page
+     */
     private fun bindCustomTabsService(url: String) {
         tabConnection = object : CustomTabsServiceConnection() {
             override fun onCustomTabsServiceConnected(
@@ -107,11 +127,18 @@ class InfomaniakLogin(
         CustomTabsClient.bindCustomTabsService(context, CHROME_STABLE_PACKAGE, tabConnection!!)
     }
 
+    /**
+     * Launch the custom tab based on an URL (legacy method)
+     * @url String : URL of the login page
+     */
     private fun launchCustomTab(url: String) {
         tabClient?.warmup(0L)
         tabIntent.launchUrl(context, Uri.parse(url))
     }
 
+    /**
+     * Determine if Custom Chrome tabs are supported on the device
+     */
     private fun isChromeCustomTabsSupported(context: Context): Boolean {
         val serviceIntent = Intent(SERVICE_ACTION).apply {
             setPackage(CHROME_STABLE_PACKAGE)
@@ -121,9 +148,11 @@ class InfomaniakLogin(
         return !resolveInfos.isNullOrEmpty()
     }
 
-
+    /**
+     * Will generate the PKCE challenge codes for this object
+     */
     private fun generatePkceCodes() {
-        codeChallengeMethod = "S256"
+        codeChallengeMethod = DEFAULT_HASH_MODE_SHORT
 
         val preferenceName = "pkce_step_codes"
         val verifierTag = "code_verifier"
@@ -146,6 +175,9 @@ class InfomaniakLogin(
         }
     }
 
+    /**
+     * Generate the complete login URL based on parameters and base
+     */
     private fun generateUrl() {
         loginUrl = LOGIN_URL +
                 "?response_type=$DEFAULT_RESPONSE_TYPE" +
@@ -156,6 +188,9 @@ class InfomaniakLogin(
                 "&code_challenge=$codeChallenge"
     }
 
+    /**
+     * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
+     */
     private fun generateCodeVerifier(): String {
         val sr = SecureRandom()
         val code = ByteArray(33)
@@ -163,9 +198,12 @@ class InfomaniakLogin(
         return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
     }
 
+    /**
+     * Generate a challenge code for PKCE challenge (rfc7636 4.2.)
+     */
     private fun generateCodeChallenge(codeVerifier: String): String {
         val bytes = codeVerifier.toByteArray(Charsets.US_ASCII)
-        val md = MessageDigest.getInstance("SHA-256")
+        val md = MessageDigest.getInstance(DEFAULT_HASH_MODE)
         md.update(bytes, 0, bytes.size)
         val digest = md.digest()
         return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
