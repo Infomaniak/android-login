@@ -37,8 +37,8 @@ class InfomaniakLogin(
     }
 
     private lateinit var codeChallengeMethod: String
-    internal lateinit var codeChallenge: String
-    internal lateinit var codeVerifier: String
+    lateinit var codeChallenge: String
+    lateinit var codeVerifier: String
     lateinit var loginUrl: String
 
     private var tabClient: CustomTabsClient? = null
