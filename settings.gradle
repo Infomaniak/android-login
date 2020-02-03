@@ -1,2 +1,2 @@
-rootProject.name='InfomaniakLogin'
+rootProject.name='android-login'
 include ':app'
