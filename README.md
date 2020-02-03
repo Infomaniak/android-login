@@ -2,11 +2,6 @@
 
 Library to simplify login process with Infomaniak oauth 2.0 protocol
 
-## Install
-0. Copy the SSH link of the library
-1. Add the library as a git submodule in your favorite git client
-2. In your
-
 ## Use
 
 In the `onCreate` method of your Activity/Fragment, instantiate the library :
