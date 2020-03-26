@@ -19,7 +19,6 @@ import java.security.SecureRandom
 /**
  * Class which consists to create and manage an oauth 2.0 connection through Infomaniak Process
  * Supports PKCE challenge and legacy browser
- * Author : Infomaniak Network SA (Kilian P.)
  */
 class InfomaniakLogin(
     private val context: Context,
@@ -78,7 +77,7 @@ class InfomaniakLogin(
     /**
      * Unbind the custom tab (close the connection)
      */
-    private fun unbind() {
+    fun unbind() {
         try {
             context.unbindService(tabConnection!!)
         } catch (ignore: Exception) {
