@@ -2,7 +2,7 @@ package com.infomaniak.login.exemple
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.exemple.GlobalConstants.APP_UID
@@ -22,22 +22,22 @@ class MainActivity : AppCompatActivity() {
             infomaniakLogin = InfomaniakLogin(
                 context = this,
                 clientId = CLIENT_ID,
+                appUID = APP_UID,
                 redirectUri = REDIRECT_URI
             )
         }
 
-        val data = intent.data
-        if (data != null && APP_UID == data.scheme) {
-            intent.data = null
-            val code = data.getQueryParameter("code")
-            val error = data.getQueryParameter("error")
-            if (!TextUtils.isEmpty(code)) {
-                val intent = Intent(this@MainActivity, LoginActivity::class.java)
+        infomaniakLogin?.checkResponse(intent,
+            { code ->
+                val intent = Intent(this, LoginActivity::class.java)
                 intent.putExtra("code", code)
                 intent.putExtra("verifier", infomaniakLogin?.codeVerifier)
                 startActivity(intent)
+            },
+            { error ->
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show()
             }
-        }
+        )
 
         loginButton.setOnClickListener {
             infomaniakLogin?.start()
