@@ -19,7 +19,6 @@ class MainActivity : AppCompatActivity() {
 
         infomaniakLogin = InfomaniakLogin(
             context = this,
-            loginUrl = "https://login.preprod.dev.infomaniak.ch/",
             clientId = CLIENT_ID,
             appUID = APP_UID
         )
