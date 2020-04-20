@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
 
         infomaniakLogin = InfomaniakLogin(
             context = this,
-            clientId = CLIENT_ID,
+            clientID = CLIENT_ID,
             appUID = APP_UID
         )
 
@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
             { code ->
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.putExtra("code", code)
-                intent.putExtra("verifier", infomaniakLogin.getCodeVerifier())
                 startActivity(intent)
             },
             { error ->
