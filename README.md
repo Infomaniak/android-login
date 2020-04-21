@@ -6,7 +6,7 @@ Library to simplify login process with Infomaniak oauth 2.0 protocol
 
 In the `build.gradle` of your lib/app (not root level), add this instruction :
 ```
-implementation 'com.github.Infomaniak:android-login:1.4'
+implementation 'com.github.Infomaniak:android-login:1.8.1'
 ```
 
 ## Use

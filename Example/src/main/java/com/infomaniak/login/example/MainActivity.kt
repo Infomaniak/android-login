@@ -1,12 +1,12 @@
-package com.infomaniak.login.exemple
+package com.infomaniak.login.example
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
-import com.infomaniak.login.exemple.BuildConfig.APPLICATION_ID
-import com.infomaniak.login.exemple.BuildConfig.CLIENT_ID
+import com.infomaniak.login.example.BuildConfig.APPLICATION_ID
+import com.infomaniak.login.example.BuildConfig.CLIENT_ID
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {

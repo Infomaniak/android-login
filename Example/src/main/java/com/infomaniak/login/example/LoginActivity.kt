@@ -1,11 +1,11 @@
-package com.infomaniak.login.exemple
+package com.infomaniak.login.example
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.infomaniak.lib.login.InfomaniakLogin
-import com.infomaniak.login.exemple.BuildConfig.APPLICATION_ID
-import com.infomaniak.login.exemple.BuildConfig.CLIENT_ID
+import com.infomaniak.login.example.BuildConfig.APPLICATION_ID
+import com.infomaniak.login.example.BuildConfig.CLIENT_ID
 import kotlinx.android.synthetic.main.activity_login.*
 import okhttp3.OkHttpClient
 
