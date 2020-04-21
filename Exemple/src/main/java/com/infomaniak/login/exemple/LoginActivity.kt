@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.infomaniak.lib.login.InfomaniakLogin
-import com.infomaniak.login.exemple.GlobalConstants.APP_UID
-import com.infomaniak.login.exemple.GlobalConstants.CLIENT_ID
+import com.infomaniak.login.exemple.BuildConfig.APPLICATION_ID
+import com.infomaniak.login.exemple.BuildConfig.CLIENT_ID
 import kotlinx.android.synthetic.main.activity_login.*
 import okhttp3.OkHttpClient
 
@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
                 val infomaniakLogin = InfomaniakLogin(
                     context = this,
                     clientID = CLIENT_ID,
-                    appUID = APP_UID
+                    appUID = APPLICATION_ID
                 )
 
                 lifecycleScope.launchWhenStarted {

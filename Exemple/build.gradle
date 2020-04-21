@@ -13,6 +13,8 @@ android {
         versionCode 1
         versionName "1.0"
 
+        buildConfigField "String", "CLIENT_ID", '"xxxx-xxxx-xxxx-xxxx-xxxx"'
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
