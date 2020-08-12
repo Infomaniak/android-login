@@ -2,6 +2,7 @@ package com.infomaniak.login.example
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
         infomaniakLogin = InfomaniakLogin(
             context = this,
+            loginUrl = "https://login.preprod.dev.infomaniak.ch/",
             clientID = CLIENT_ID,
             appUID = APPLICATION_ID
         )
