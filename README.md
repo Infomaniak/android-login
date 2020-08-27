@@ -6,7 +6,7 @@ Library to simplify login process with Infomaniak oauth 2.0 protocol
 
 In the `build.gradle` of your lib/app (not root level), add this instruction :
 ```
-implementation 'com.github.Infomaniak:android-login:1.8.1'
+implementation 'com.github.Infomaniak:android-login:2.0'
 ```
 
 ## Use
@@ -24,7 +24,7 @@ with these arguments :
 - `clientId` : The client ID of the app
 - `redirectUri` : The redirection URL after a successful login (in order to handle the codes)
 
-Once instantiated, you may use this everywhere in your activity/fragment, for example in a `onClick` method :
+**Once instantiated, you may use this everywhere in your activity/fragment, for example in a `onClick` method :**
 
 ```
 		buttonConnect.setOnClickListener {
@@ -34,3 +34,28 @@ Once instantiated, you may use this everywhere in your activity/fragment, for ex
 
 It'll create a custom chrome tab or launch the browser.
 If needed (to see if an error occured), the `start()` method returns a boolean indicating the success (or not) of the operation.
+
+
+**Or you can use the `loginInstance` to create a login from a webview.**
+
+```
+		buttonConnect.setOnClickListener {
+			infomaniakLogin.startWebViewLogin(2)
+		}
+```
+
+It'll create an activity that contains a webview. The `startWebViewLogin` takes as parameter an integer that will correspond to `requestCode` in `onActivityResult`.
+
+
+```
+		override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+			super.onActivityResult(requestCode, resultCode, data)
+			if (requestCode == WEB_VIEW_LOGIN_REQ && resultCode == RESULT_OK) {
+				val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
+				val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
+				val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
+				...
+			}
+```
+
+This allows you to retrieve the answers from the webview, either the `code` for `auth` in case of success, or in case of error, we retrieve the `error code` and the `translated error message`.
