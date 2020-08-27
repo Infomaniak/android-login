@@ -50,7 +50,7 @@ It'll create an activity that contains a webview. The `startWebViewLogin` takes 
 ```
 		override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 			super.onActivityResult(requestCode, resultCode, data)
-			if (requestCode == WEB_VIEW_LOGIN_REQ && resultCode == RESULT_OK) {
+			if (requestCode == 2 && resultCode == RESULT_OK) {
 				val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
 				val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
 				val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
