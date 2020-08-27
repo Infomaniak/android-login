@@ -59,3 +59,9 @@ It'll create an activity that contains a webview. The `startWebViewLogin` takes 
 ```
 
 This allows you to retrieve the answers from the webview, either the `code` for `auth` in case of success, or in case of error, we retrieve the `error code` and the `translated error message`.
+
+
+```
+		<activity android:name="com.infomaniak.lib.login.WebViewLoginActivity"  />
+```
+Add this to the manifest, to allow the webview
