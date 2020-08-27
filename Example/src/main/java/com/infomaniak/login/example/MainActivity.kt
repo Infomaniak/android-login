@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
-import com.infomaniak.lib.login.WebViewLoginActivity
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID
 import kotlinx.android.synthetic.main.activity_main.loginButton
@@ -26,7 +25,6 @@ class MainActivity : AppCompatActivity() {
 
         infomaniakLogin = InfomaniakLogin(
             context = this,
-            loginUrl = "https://login.preprod.dev.infomaniak.ch/",
             clientID = CLIENT_ID,
             appUID = APPLICATION_ID
         )
@@ -47,11 +45,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         webViewLoginButton.setOnClickListener {
-            val intent = Intent(this, WebViewLoginActivity::class.java).apply {
-                putExtra(WebViewLoginActivity.CLIENT_ID_TAG, BuildConfig.CLIENT_ID)
-                putExtra(WebViewLoginActivity.APPLICATION_ID_TAG, BuildConfig.APPLICATION_ID)
-            }
-            startActivityForResult(intent, WEB_VIEW_LOGIN_REQ)
+            infomaniakLogin.startWebViewLogin(WEB_VIEW_LOGIN_REQ)
         }
 
     }
@@ -59,10 +53,20 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == WEB_VIEW_LOGIN_REQ && resultCode == RESULT_OK) {
-            val code = data?.extras?.getString(WebViewLoginActivity.CODE_TAG)
-            val error = data?.extras?.getString(WebViewLoginActivity.ERROR_TAG)
+            val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
+            val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
+            val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
+
+            if (!translatedError.isNullOrBlank()){
+                Toast.makeText(this, translatedError, Toast.LENGTH_LONG).show()
+            } else {
+                val intent = Intent(this, LoginActivity::class.java).apply {
+                    putExtra("code", code)
+                }
+                startActivity(intent)
+            }
             Log.e("WebView code", code ?: "")
-            Log.e("WebView error", error ?: "")
+            Log.e("WebView error", errorCode ?: "")
         }
     }
 
