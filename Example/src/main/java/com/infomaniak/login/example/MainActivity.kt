@@ -8,14 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID
-import kotlinx.android.synthetic.main.activity_main.loginButton
-import kotlinx.android.synthetic.main.activity_main.webViewLoginButton
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var infomaniakLogin: InfomaniakLogin
 
-    companion object{
+    companion object {
         private const val WEB_VIEW_LOGIN_REQ = 1
     }
 
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
             val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
 
-            if (!translatedError.isNullOrBlank()){
+            if (!translatedError.isNullOrBlank()) {
                 Toast.makeText(this, translatedError, Toast.LENGTH_LONG).show()
             } else {
                 val intent = Intent(this, LoginActivity::class.java).apply {
