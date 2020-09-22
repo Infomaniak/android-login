@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
             infomaniakLogin.startWebViewLogin(WEB_VIEW_LOGIN_REQ)
         }
 
+        fragmentLoginButton.setOnClickListener {
+            val intent = Intent(this, FragmentMainActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
