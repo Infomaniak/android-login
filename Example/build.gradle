@@ -6,13 +6,14 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId "com.infomaniak.auth"
+        applicationId "com.infomaniak.login.example"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "CLIENT_ID", '"1d06ddb8-65d7-4e45-a1b1-276f5da71833"'
+        buildConfigField "String", "APPLICATION_ID_EXEMPLE", '"com.infomaniak.auth"'
+        buildConfigField "String", "CLIENT_ID_EXEMPLE", '"1d06ddb8-65d7-4e45-a1b1-276f5da71833"'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.infomaniak.lib.login.InfomaniakLogin
+import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
+import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
 import kotlinx.android.synthetic.main.main_fragment.*
 
 class FragmentMainFragment : Fragment() {
@@ -33,8 +35,8 @@ class FragmentMainFragment : Fragment() {
 
         infomaniakLogin = InfomaniakLogin(
             context = requireContext(),
-            clientID = BuildConfig.CLIENT_ID,
-            appUID = BuildConfig.APPLICATION_ID
+            clientID = CLIENT_ID_EXEMPLE,
+            appUID = APPLICATION_ID_EXEMPLE
         )
 
         webViewLoginButton.setOnClickListener {
@@ -47,19 +49,20 @@ class FragmentMainFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == WEB_VIEW_LOGIN_REQ && resultCode == AppCompatActivity.RESULT_OK) {
             val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
-            val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
-            val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
 
-            if (!translatedError.isNullOrBlank()) {
-                Toast.makeText(requireContext(), translatedError, Toast.LENGTH_LONG).show()
-            } else {
+            if (!code.isNullOrBlank()) {
+                Log.d("WebView code", code)
                 val intent = Intent(requireContext(), LoginActivity::class.java).apply {
                     putExtra("code", code)
                 }
                 startActivity(intent)
+            } else {
+                val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
+                val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
+
+                Toast.makeText(requireContext(), translatedError, Toast.LENGTH_LONG).show()
+                Log.d("WebView error", errorCode ?: "")
             }
-            Log.e("WebView code", code ?: "")
-            Log.e("WebView error", errorCode ?: "")
         }
     }
 
