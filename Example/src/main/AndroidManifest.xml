@@ -31,8 +31,10 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:scheme="com.infomaniak.auth" />
             </intent-filter>
         </activity>
@@ -41,7 +43,9 @@
 
         <activity android:name=".LoginActivity" />
 
-        <activity android:name="com.infomaniak.lib.login.WebViewLoginActivity" />
+        <activity
+            android:name="com.infomaniak.lib.login.WebViewLoginActivity"
+            android:configChanges="orientation|screenSize" />
 
     </application>
 
