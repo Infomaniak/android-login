@@ -51,10 +51,6 @@ class WebViewLoginActivity : AppCompatActivity() {
                     return !isValidUrl(url)
                 }
 
-                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    return !isValidUrl(url)
-                }
-
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                     progressBar.visibility = View.VISIBLE
@@ -89,6 +85,7 @@ class WebViewLoginActivity : AppCompatActivity() {
                     }
                 }
 
+                @Deprecated("Only for API below 23, otherwise use WebViewClient.onReceivedError(WebView, WebResourceRequest, WebResourceError)")
                 override fun onReceivedError(
                     view: WebView?,
                     errorCode: Int,
@@ -121,7 +118,7 @@ class WebViewLoginActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.webview_menu, menu)
         return true
     }

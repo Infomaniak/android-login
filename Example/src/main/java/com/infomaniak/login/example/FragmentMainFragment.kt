@@ -23,7 +23,11 @@ class FragmentMainFragment : Fragment() {
 
     private lateinit var infomaniakLogin: InfomaniakLogin
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
@@ -36,28 +40,32 @@ class FragmentMainFragment : Fragment() {
             appUID = APPLICATION_ID_EXEMPLE,
         )
 
-        webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
+        webViewLoginButton.setOnClickListener {
+            infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher)
+        }
     }
 
-    private val webViewLoginResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
-        with(result) {
-            if (resultCode == AppCompatActivity.RESULT_OK) {
-                val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
+    private val webViewLoginResultLauncher =
+        registerForActivityResult(StartActivityForResult()) { result ->
+            with(result) {
+                if (resultCode == AppCompatActivity.RESULT_OK) {
+                    val code = data?.extras?.getString(InfomaniakLogin.CODE_TAG)
 
-                if (!code.isNullOrBlank()) {
-                    Log.d("WebView code", code)
-                    val intent = Intent(requireContext(), LoginActivity::class.java).apply {
-                        putExtra("code", code)
+                    if (!code.isNullOrBlank()) {
+                        Log.d("WebView code", code)
+                        val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                            putExtra("code", code)
+                        }
+                        startActivity(intent)
+                    } else {
+                        val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
+                        val translatedError =
+                            data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
+
+                        Toast.makeText(requireContext(), translatedError, Toast.LENGTH_LONG).show()
+                        Log.d("WebView error", errorCode ?: "")
                     }
-                    startActivity(intent)
-                } else {
-                    val errorCode = data?.extras?.getString(InfomaniakLogin.ERROR_CODE_TAG)
-                    val translatedError = data?.extras?.getString(InfomaniakLogin.ERROR_TRANSLATED_TAG)
-
-                    Toast.makeText(requireContext(), translatedError, Toast.LENGTH_LONG).show()
-                    Log.d("WebView error", errorCode ?: "")
                 }
             }
         }
-    }
 }

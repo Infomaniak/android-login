@@ -1,2 +1,2 @@
-rootProject.name='android-login'
+rootProject.name = 'android-login'
 include ':Library', ':Example'
