@@ -1,8 +1,10 @@
 package com.infomaniak.login.example
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.infomaniak.lib.login.ApiToken
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
@@ -25,11 +27,13 @@ class LoginActivity : AppCompatActivity() {
                 )
 
                 lifecycleScope.launchWhenStarted {
+                    lateinit var token: ApiToken;
                     val okHttpClient = OkHttpClient.Builder()
                         .build()
                     infomaniakLogin.getToken(okHttpClient,
                         code,
                         { apiToken ->
+                            token = apiToken
                             textView.text = "${apiToken.userId} ${apiToken.accessToken}"
                         }, { error ->
                             when (error) {
@@ -41,6 +45,13 @@ class LoginActivity : AppCompatActivity() {
                                 }
                             }
                         })
+
+                    infomaniakLogin.deleteToken(
+                        okHttpClient,
+                        token,
+                        { Log.e("Login", "success") },
+                        { error -> Log.e("Login", error.name) }
+                    )
                 }
             }
         }
