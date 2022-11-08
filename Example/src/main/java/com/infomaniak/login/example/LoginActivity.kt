@@ -3,12 +3,15 @@ package com.infomaniak.login.example
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.infomaniak.lib.login.ApiToken
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
 class LoginActivity : AppCompatActivity() {
@@ -27,14 +30,20 @@ class LoginActivity : AppCompatActivity() {
                 )
 
                 lifecycleScope.launchWhenStarted {
-                    lateinit var token: ApiToken;
                     val okHttpClient = OkHttpClient.Builder()
                         .build()
                     infomaniakLogin.getToken(okHttpClient,
                         code,
                         { apiToken ->
-                            token = apiToken
                             textView.text = "${apiToken.userId} ${apiToken.accessToken}"
+                            btnDeconnect.isVisible = true
+                            btnDeconnect.setOnClickListener {
+                                infomaniakLogin.deconnect(okHttpClient, apiToken) { error ->
+                                    Log.e("Login", error.name)
+                                    deleteTokenError.text =
+                                        "Error in token deletion : ${error.name}"
+                                }
+                            }
                         }, { error ->
                             when (error) {
                                 InfomaniakLogin.ErrorStatus.SERVER -> {
@@ -45,14 +54,19 @@ class LoginActivity : AppCompatActivity() {
                                 }
                             }
                         })
-
-                    infomaniakLogin.deleteToken(
-                        okHttpClient,
-                        token,
-                        { Log.e("Login", "success") },
-                        { error -> Log.e("Login", error.name) }
-                    )
                 }
+            }
+        }
+    }
+
+    private fun InfomaniakLogin.deconnect(
+        okHttpClient: OkHttpClient,
+        token: ApiToken,
+        onError: (error: InfomaniakLogin.ErrorStatus) -> Unit
+    ) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            deleteToken(okHttpClient, token, onError) {
+                lifecycleScope.launch(Dispatchers.Main) { onBackPressed() }
             }
         }
     }
