@@ -1,7 +1,6 @@
 package com.infomaniak.login.example
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -21,8 +20,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         if (intent != null) {
-            val code = intent.getStringExtra("code")
-            code?.let {
+            intent.getStringExtra("code")?.let {
                 val infomaniakLogin = InfomaniakLogin(
                     context = this,
                     clientID = CLIENT_ID_EXEMPLE,
@@ -30,28 +28,20 @@ class LoginActivity : AppCompatActivity() {
                 )
 
                 lifecycleScope.launchWhenStarted {
-                    val okHttpClient = OkHttpClient.Builder()
-                        .build()
-                    infomaniakLogin.getToken(okHttpClient,
-                        code,
+                    val okHttpClient = OkHttpClient.Builder().build()
+
+                    infomaniakLogin.getToken(okHttpClient, it,
                         { apiToken ->
-                            textView.text = "${apiToken.userId} ${apiToken.accessToken}"
-                            btnDeconnect.isVisible = true
-                            btnDeconnect.setOnClickListener {
-                                infomaniakLogin.deconnect(okHttpClient, apiToken) { error ->
-                                    Log.e("Login", error.name)
-                                    deleteTokenError.text =
-                                        "Error in token deletion : ${error.name}"
-                                }
+                            getTokenStatus.text = "${apiToken.userId} ${apiToken.accessToken}"
+
+                            btnDeconnect.apply {
+                                isVisible = true
+                                setOnClickListener { infomaniakLogin.deconnect(okHttpClient, apiToken) }
                             }
                         }, { error ->
                             when (error) {
-                                InfomaniakLogin.ErrorStatus.SERVER -> {
-                                    textView.text = "Server error"
-                                }
-                                else -> {
-                                    textView.text = "Error"
-                                }
+                                InfomaniakLogin.ErrorStatus.SERVER -> getTokenStatus.text = "Server error"
+                                else -> getTokenStatus.text = "Error"
                             }
                         })
                 }
@@ -59,15 +49,15 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun InfomaniakLogin.deconnect(
-        okHttpClient: OkHttpClient,
-        token: ApiToken,
-        onError: (error: InfomaniakLogin.ErrorStatus) -> Unit
-    ) {
+    private fun InfomaniakLogin.deconnect(okHttpClient: OkHttpClient, token: ApiToken) {
         lifecycleScope.launch(Dispatchers.IO) {
-            deleteToken(okHttpClient, token, onError) {
-                lifecycleScope.launch(Dispatchers.Main) { onBackPressed() }
-            }
+            deleteToken(okHttpClient, token,
+                {
+                    deleteTokenStatus.text = "Delete token success"
+                }, { error ->
+                    deleteTokenStatus.text = "Error in token deletion : ${error.name}"
+                }
+            )
         }
     }
 }
