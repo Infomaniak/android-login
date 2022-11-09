@@ -16,6 +16,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.CustomTabsServiceConnection
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import kotlinx.android.parcel.RawValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
@@ -36,32 +37,6 @@ class InfomaniakLogin(
     private val appUID: String
 ) {
 
-    companion object {
-        private const val CHROME_STABLE_PACKAGE = "com.android.chrome"
-        private const val SERVICE_ACTION = "android.support.customtabs.action.CustomTabsService"
-        private const val DEFAULT_ACCESS_TYPE = "offline"
-        private const val DEFAULT_HASH_MODE = "SHA-256"
-        private const val DEFAULT_HASH_MODE_SHORT = "S256"
-        private const val DEFAULT_LOGIN_URL = "https://login.infomaniak.com/"
-        private const val DEFAULT_REDIRECT_URI = "://oauth2redirect"
-        private const val DEFAULT_RESPONSE_TYPE = "code"
-        private const val preferenceName = "pkce_step_codes"
-        private const val verifierKey = "code_verifier"
-
-        const val LOGIN_URL_TAG = "login_url"
-        const val CODE_TAG = "code"
-        const val ERROR_TRANSLATED_TAG = "translated_error"
-        const val ERROR_CODE_TAG = "error_code"
-
-        const val WEBVIEW_ERROR_CODE_INTERNET_DISCONNECTED = "net::ERR_INTERNET_DISCONNECTED"
-        const val WEBVIEW_ERROR_CODE_CONNECTION_REFUSED = "net::ERR_CONNECTION_REFUSED"
-
-        const val ERROR_ACCESS_DENIED = "access_denied"
-
-        const val SSL_ERROR_CODE = "ssl_error_code"
-        const val HTTP_ERROR_CODE = "http_error_code"
-    }
-
     private var tabClient: CustomTabsClient? = null
     private var tabConnection: CustomTabsServiceConnection? = null
     private val tabIntent: CustomTabsIntent by lazy {
@@ -72,6 +47,8 @@ class InfomaniakLogin(
                 customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
     }
+
+    private val gson: Gson by lazy { Gson() }
 
     /**
      * Officially start the Chrome Tab
@@ -215,9 +192,9 @@ class InfomaniakLogin(
      * Generate a verifier code for PKCE challenge (rfc7636 4.1.)
      */
     private fun generateCodeVerifier(): String {
-        val sr = SecureRandom()
+        val secureRandom = SecureRandom()
         val code = ByteArray(33)
-        sr.nextBytes(code)
+        secureRandom.nextBytes(code)
         return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
     }
 
@@ -226,9 +203,9 @@ class InfomaniakLogin(
      */
     private fun generateCodeChallenge(codeVerifier: String): String {
         val bytes = codeVerifier.toByteArray(Charsets.US_ASCII)
-        val md = MessageDigest.getInstance(DEFAULT_HASH_MODE)
-        md.update(bytes, 0, bytes.size)
-        val digest = md.digest()
+        val messageDigest = MessageDigest.getInstance(DEFAULT_HASH_MODE)
+        messageDigest.update(bytes, 0, bytes.size)
+        val digest = messageDigest.digest()
         return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
     }
 
@@ -315,7 +292,6 @@ class InfomaniakLogin(
         onError: (error: ErrorStatus) -> Unit
     ) = withContext(Dispatchers.IO) {
         try {
-
             val request = Request.Builder()
                 .url("${loginUrl}token")
                 .post(body)
@@ -324,52 +300,117 @@ class InfomaniakLogin(
             val response = okHttpClient.newCall(request).execute()
             val bodyResponse = response.body?.string()
 
-            when {
-                response.code >= 500 -> {
-                    withContext(Dispatchers.Main) {
-                        onError(ErrorStatus.SERVER)
-                    }
-                }
-                response.code >= 400 -> {
-                    withContext(Dispatchers.Main) {
-                        onError(ErrorStatus.AUTH)
-                    }
-                }
-                bodyResponse.isNullOrBlank() -> {
-                    withContext(Dispatchers.Main) {
-                        onError(ErrorStatus.CONNECTION)
-                    }
-                }
-                else -> {
-                    withContext(Dispatchers.Default) {
-                        val gson = Gson()
-                        val jsonResult = JsonParser.parseString(bodyResponse)
-                        val apiToken = gson.fromJson(jsonResult, ApiToken::class.java)
+            if (verifyHttpResponseSuccess(response.code, bodyResponse, onError)) {
+                withContext(Dispatchers.Default) {
+                    val jsonResult = JsonParser.parseString(bodyResponse)
+                    val apiToken = gson.fromJson(jsonResult, ApiToken::class.java)
 
-                        // Set the token expiration date (with margin-delay)
-                        apiToken.expiresAt =
-                            System.currentTimeMillis() + ((apiToken.expiresIn - 60) * 1000)
+                    // Set the token expiration date (with margin-delay)
+                    apiToken.expiresAt = System.currentTimeMillis() + ((apiToken.expiresIn - 60) * 1000)
 
-                        withContext(Dispatchers.Main) {
-                            onSuccess(apiToken)
-                        }
-                    }
+                    withContext(Dispatchers.Main) { onSuccess(apiToken) }
                 }
             }
         } catch (exception: Exception) {
             exception.printStackTrace()
-
-            val descriptionError =
-                if (exception.javaClass.name.contains("java.net.", ignoreCase = true) ||
-                    exception.javaClass.name.contains("javax.net.", ignoreCase = true)
-                ) {
-                    ErrorStatus.CONNECTION
-                } else {
-                    ErrorStatus.UNKNOWN
-                }
-            withContext(Dispatchers.Main) {
-                onError(descriptionError)
-            }
+            withContext(Dispatchers.Main) { onError(getErrorStatusFromException(exception)) }
         }
+    }
+
+    suspend fun deleteToken(
+        okHttpClient: OkHttpClient,
+        token: ApiToken,
+        onSuccess: () -> Unit = {},
+        onError: (error: ErrorStatus) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("${loginUrl}token")
+                .addHeader("Authorization", "Bearer ${token.accessToken}")
+                .delete()
+                .build()
+
+            val response = okHttpClient.newCall(request).execute()
+            val bodyResponse = response.body?.string()
+
+            if (verifyHttpResponseSuccess(response.code, bodyResponse, onError)) {
+                withContext(Dispatchers.Default) {
+                    val jsonResult = JsonParser.parseString(bodyResponse)
+
+                    val apiResponse = gson.fromJson(jsonResult, ApiResponse::class.java)
+                    if (apiResponse.result == "error") {
+                        withContext(Dispatchers.Main) { onError(ErrorStatus.UNKNOWN) }
+                    }
+
+                    withContext(Dispatchers.Main) { onSuccess() }
+                }
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            withContext(Dispatchers.Main) { onError(getErrorStatusFromException(exception)) }
+        }
+    }
+
+    private suspend fun verifyHttpResponseSuccess(
+        statusCode: Int,
+        bodyResponse: String?,
+        onError: (error: ErrorStatus) -> Unit
+    ): Boolean = when {
+        statusCode >= 500 -> {
+            withContext(Dispatchers.Main) { onError(ErrorStatus.SERVER) }
+            false
+        }
+        statusCode >= 400 -> {
+            withContext(Dispatchers.Main) { onError(ErrorStatus.AUTH) }
+            false
+        }
+        bodyResponse.isNullOrBlank() -> {
+            withContext(Dispatchers.Main) { onError(ErrorStatus.CONNECTION) }
+            false
+        }
+        else -> true
+    }
+
+    private fun getErrorStatusFromException(exception: Exception): ErrorStatus {
+        return if (
+            exception.javaClass.name.contains("java.net.", ignoreCase = true) ||
+            exception.javaClass.name.contains("javax.net.", ignoreCase = true)
+        ) {
+            ErrorStatus.CONNECTION
+        } else {
+            ErrorStatus.UNKNOWN
+        }
+    }
+
+    private data class ApiResponse(
+        val result: String,
+        val error: String? = null,
+        val data: @RawValue Any? = null
+    )
+
+    companion object {
+        private const val CHROME_STABLE_PACKAGE = "com.android.chrome"
+        private const val SERVICE_ACTION = "android.support.customtabs.action.CustomTabsService"
+        private const val DEFAULT_ACCESS_TYPE = "offline"
+        private const val DEFAULT_HASH_MODE = "SHA-256"
+        private const val DEFAULT_HASH_MODE_SHORT = "S256"
+        private const val DEFAULT_LOGIN_URL = "https://login.infomaniak.com/"
+        private const val DEFAULT_REDIRECT_URI = "://oauth2redirect"
+        private const val DEFAULT_RESPONSE_TYPE = "code"
+        private const val preferenceName = "pkce_step_codes"
+        private const val verifierKey = "code_verifier"
+
+        const val LOGIN_URL_TAG = "login_url"
+        const val CODE_TAG = "code"
+        const val ERROR_TRANSLATED_TAG = "translated_error"
+        const val ERROR_CODE_TAG = "error_code"
+
+        const val WEBVIEW_ERROR_CODE_INTERNET_DISCONNECTED = "net::ERR_INTERNET_DISCONNECTED"
+        const val WEBVIEW_ERROR_CODE_CONNECTION_REFUSED = "net::ERR_CONNECTION_REFUSED"
+
+        const val ERROR_ACCESS_DENIED = "access_denied"
+
+        const val SSL_ERROR_CODE = "ssl_error_code"
+        const val HTTP_ERROR_CODE = "http_error_code"
     }
 }
