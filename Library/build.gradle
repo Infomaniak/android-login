@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 
 group = 'com.github.Infomaniak'
 
@@ -32,6 +32,8 @@ android {
     kotlinOptions {
         jvmTarget = rootProject.ext.java_version
     }
+
+    buildFeatures { viewBinding true }
 
 }
 
