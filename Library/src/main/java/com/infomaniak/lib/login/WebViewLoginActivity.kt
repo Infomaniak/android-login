@@ -9,21 +9,26 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.LOGIN_URL_TAG
+import com.infomaniak.lib.login.InfomaniakLogin.Companion.REMOVE_COOKIES_TAG
 import kotlinx.android.synthetic.main.activity_web_view_login.*
 import java.util.*
 
 class WebViewLoginActivity : AppCompatActivity() {
 
-    private lateinit var appUID: String
-
-    companion object {
-
-        const val APPLICATION_ID_TAG = "appUID"
+    private val appUID: String by lazy {
+        intent.getStringExtra(APPLICATION_ID_TAG) ?: throw MissingFormatArgumentException(APPLICATION_ID_TAG)
+    }
+    private val loginUrl: String by lazy {
+        intent.getStringExtra(LOGIN_URL_TAG) ?: throw MissingFormatArgumentException(LOGIN_URL_TAG)
+    }
+    private val removeCookies: Boolean by lazy {
+        intent.getBooleanExtra(REMOVE_COOKIES_TAG, true)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -32,93 +37,15 @@ class WebViewLoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_web_view_login)
         setSupportActionBar(toolbar)
 
-        CookieManager.getInstance().removeAllCookies(null)
-        CookieManager.getInstance().flush()
-
-        val loginUrl = intent.extras?.getString(LOGIN_URL_TAG)
-            ?: throw MissingFormatArgumentException(LOGIN_URL_TAG)
-        appUID = intent.extras?.getString(APPLICATION_ID_TAG)
-            ?: throw MissingFormatArgumentException(APPLICATION_ID_TAG)
+        if (removeCookies) {
+            CookieManager.getInstance().removeAllCookies(null)
+            CookieManager.getInstance().flush()
+        }
 
         webview.apply {
             settings.javaScriptEnabled = true
-            webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?
-                ): Boolean {
-                    val url = request?.url.toString()
-                    return !isValidUrl(url)
-                }
-
-                @Deprecated("Only for API below 23")
-                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    return !isValidUrl(url)
-                }
-
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    super.onPageStarted(view, url, favicon)
-                    progressBar.visibility = View.VISIBLE
-                    progressBar.progress = 0
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    progressBar.visibility = View.GONE
-                    progressBar.progress = 100
-                }
-
-                override fun onReceivedSslError(
-                    view: WebView?,
-                    handler: SslErrorHandler?,
-                    error: SslError?
-                ) {
-                    error?.certificate?.apply {
-                        if (issuedBy?.cName == "localhost" && issuedTo?.cName == "localhost") return
-                    }
-                    errorResult(InfomaniakLogin.SSL_ERROR_CODE)
-                }
-
-                @RequiresApi(Build.VERSION_CODES.M)
-                override fun onReceivedError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    error: WebResourceError?
-                ) {
-                    if (isValidUrl(request?.url.toString())) {
-                        errorResult(error?.description?.toString() ?: "")
-                    }
-                }
-
-                @Deprecated("Only for API below 23")
-                override fun onReceivedError(
-                    view: WebView?,
-                    errorCode: Int,
-                    description: String?,
-                    failingUrl: String?
-                ) {
-                    if (isValidUrl(failingUrl)) {
-                        errorResult(description ?: "")
-                    }
-                }
-
-                override fun onReceivedHttpError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    errorResponse: WebResourceResponse?
-                ) {
-                    if (request?.method == "GET") errorResult(InfomaniakLogin.HTTP_ERROR_CODE)
-                }
-            }
-
-            webview.webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView, newProgress: Int) {
-                    progressBar.progress = newProgress
-                    if (newProgress == 100) {
-                        progressBar.visibility = View.GONE
-                    }
-                }
-            }
+            webViewClient = LoginWebViewClient()
+            webChromeClient = ProgressWebChromeClient()
             loadUrl(loginUrl)
         }
     }
@@ -131,9 +58,10 @@ class WebViewLoginActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.doneItem -> {
-                onBackPressed()
+                finish()
                 true
             }
+
             else -> false
         }
     }
@@ -182,5 +110,68 @@ class WebViewLoginActivity : AppCompatActivity() {
             InfomaniakLogin.ERROR_ACCESS_DENIED -> getString(R.string.access_denied)
             else -> getString(R.string.an_error_has_occurred)
         }
+    }
+
+    private inner class LoginWebViewClient : WebViewClient() {
+
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            val url = request?.url.toString()
+            return !isValidUrl(url)
+        }
+
+        @Deprecated("Only for API below 23")
+        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+            return !isValidUrl(url)
+        }
+
+        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            progressBar.progress = 0
+            progressBar.isVisible = true
+        }
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            progressBar.progress = 100
+            progressBar.isGone = true
+        }
+
+        override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+            error?.certificate?.apply {
+                if (issuedBy?.cName == "localhost" && issuedTo?.cName == "localhost") return
+            }
+            errorResult(InfomaniakLogin.SSL_ERROR_CODE)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.M)
+        override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+            if (isValidUrl(request?.url.toString())) {
+                errorResult(error?.description?.toString() ?: "")
+            }
+        }
+
+        @Deprecated("Only for API below 23")
+        override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
+            if (isValidUrl(failingUrl)) {
+                errorResult(description ?: "")
+            }
+        }
+
+        override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+            if (request?.method == "GET") errorResult(InfomaniakLogin.HTTP_ERROR_CODE)
+        }
+    }
+
+    private inner class ProgressWebChromeClient : WebChromeClient() {
+
+        override fun onProgressChanged(view: WebView, newProgress: Int) {
+            progressBar.progress = newProgress
+            if (newProgress == 100) {
+                progressBar.isGone = true
+            }
+        }
+    }
+
+    companion object {
+
+        const val APPLICATION_ID_TAG = "appUID"
     }
 }
