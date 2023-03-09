@@ -36,7 +36,7 @@ buttonConnect.setOnClickListener {
 }
 ```
 
-It'll create a custom chrome tab or launch the browser.
+It will create a custom chrome tab or launch the browser.
 If needed (to see if an error occurred), the `start()` method returns a boolean indicating the success (or not) of the operation.
 
 **Or you can use the `loginInstance` to create a login from a webview.**
@@ -47,7 +47,7 @@ buttonConnect.setOnClickListener {
 }
 ```
 
-It'll create an activity that contains a webview. The `startWebViewLogin` takes as parameter a resultLauncher to handle the
+It will create an activity that contains a WebView. The `startWebViewLogin` takes as parameter a resultLauncher to handle the
 activity results.
 
 ```kotlin
@@ -66,19 +66,19 @@ private val webViewLoginResultLauncher = registerForActivityResult(StartActivity
 }
 ```
 
-This allows you to retrieve the answers from the webview, either the `code` for `auth` in case of success, or in case of error, we
+This allows you to retrieve the answers from the WebView, either the `code` for `auth` in case of success, or in case of error, we
 retrieve the `error code` and the `translated error message`.
+
+Add this to the manifest, to authorize the WebView :
 
 ```xml
 
 <activity android:name="com.infomaniak.lib.login.WebViewLoginActivity" />
 ```
 
-Add this to the manifest, to allow the webview
-
 ## Use Create account
 
-**From your `loginInstance` you need to call the methode `startCreateAccountWebView`**
+**From your `loginInstance`, you need to call the method `startCreateAccountWebView`**
 
 ```kotlin
 infomaniakLogin.startCreateAccountWebView(
