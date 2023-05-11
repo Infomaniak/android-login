@@ -13,9 +13,11 @@ import androidx.fragment.app.Fragment
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
-import kotlinx.android.synthetic.main.main_fragment.*
+import com.infomaniak.login.example.databinding.FragmentMainBinding
 
 class FragmentMainFragment : Fragment() {
+
+    private lateinit var binding: FragmentMainBinding
 
     companion object {
         fun newInstance() = FragmentMainFragment()
@@ -23,8 +25,9 @@ class FragmentMainFragment : Fragment() {
 
     private lateinit var infomaniakLogin: InfomaniakLogin
 
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.main_fragment, container, false)
+        return FragmentMainBinding.inflate(inflater, container, false).also { binding = it }.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,7 +39,7 @@ class FragmentMainFragment : Fragment() {
             appUID = APPLICATION_ID_EXEMPLE,
         )
 
-        webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
+        binding.webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
     }
 
     private val webViewLoginResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->

@@ -8,21 +8,23 @@ import com.infomaniak.lib.login.ApiToken
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
-import kotlinx.android.synthetic.main.activity_login.*
+import com.infomaniak.login.example.databinding.ActivityLoginBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
 class LoginActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private val binding: ActivityLoginBinding by lazy { ActivityLoginBinding.inflate(layoutInflater) }
+
+    override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        setContentView(root)
 
         if (intent != null) {
             intent.getStringExtra("code")?.let {
                 val infomaniakLogin = InfomaniakLogin(
-                    context = this,
+                    context = this@LoginActivity,
                     clientID = CLIENT_ID_EXEMPLE,
                     appUID = APPLICATION_ID_EXEMPLE
                 )
@@ -49,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun InfomaniakLogin.deconnect(okHttpClient: OkHttpClient, token: ApiToken) {
+    private fun InfomaniakLogin.deconnect(okHttpClient: OkHttpClient, token: ApiToken) = with(binding) {
         lifecycleScope.launch(Dispatchers.IO) {
             deleteToken(okHttpClient, token,
                 {

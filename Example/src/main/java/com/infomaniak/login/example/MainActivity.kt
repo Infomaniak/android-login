@@ -9,18 +9,20 @@ import androidx.appcompat.app.AppCompatActivity
 import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
-import kotlinx.android.synthetic.main.activity_main.*
+import com.infomaniak.login.example.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+
     private lateinit var infomaniakLogin: InfomaniakLogin
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(root)
 
         infomaniakLogin = InfomaniakLogin(
-            context = this,
+            context = this@MainActivity,
             clientID = CLIENT_ID_EXEMPLE,
             appUID = APPLICATION_ID_EXEMPLE,
         )
@@ -28,19 +30,19 @@ class MainActivity : AppCompatActivity() {
         infomaniakLogin.checkResponse(
             intent = intent,
             onSuccess = { code ->
-                val intent = Intent(this, LoginActivity::class.java).apply {
+                val intent = Intent(this@MainActivity, LoginActivity::class.java).apply {
                     putExtra("code", code)
                 }
                 startActivity(intent)
             },
-            onError = { error -> Toast.makeText(this, error, Toast.LENGTH_LONG).show() },
+            onError = { error -> Toast.makeText(this@MainActivity, error, Toast.LENGTH_LONG).show() },
         )
 
         loginButton.setOnClickListener { infomaniakLogin.start() }
 
         webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
 
-        fragmentLoginButton.setOnClickListener { startActivity(Intent(this, FragmentMainActivity::class.java)) }
+        fragmentLoginButton.setOnClickListener { startActivity(Intent(this@MainActivity, FragmentMainActivity::class.java)) }
     }
 
     private val webViewLoginResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
