@@ -17,6 +17,18 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var infomaniakLogin: InfomaniakLogin
 
+    private val createAccountResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val codeError = result.data?.getStringExtra(InfomaniakLogin.ERROR_CODE_TAG)
+            val translatedError = result.data?.getStringExtra(InfomaniakLogin.ERROR_TRANSLATED_TAG)
+            if (translatedError.isNullOrBlank()) {
+                Toast.makeText(this@MainActivity, "Creation ok", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this@MainActivity, "$codeError: $translatedError", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
         setContentView(root)
@@ -43,6 +55,15 @@ class MainActivity : AppCompatActivity() {
         webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
 
         fragmentLoginButton.setOnClickListener { startActivity(Intent(this@MainActivity, FragmentMainActivity::class.java)) }
+
+        createAccountButton.setOnClickListener {
+            infomaniakLogin.startCreateAccountWebView(
+                resultLauncher = createAccountResultLauncher,
+                createAccountUrl = "https://welcome.infomaniak.com/signup/ikmail?app=true",
+                successHost = "mail.infomaniak.com",
+                cancelHost = "welcome.infomaniak.com",
+            )
+        }
     }
 
     private val webViewLoginResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
