@@ -34,7 +34,8 @@ class InfomaniakLogin(
     private val context: Context,
     private var loginUrl: String = DEFAULT_LOGIN_URL,
     private val clientID: String,
-    private val appUID: String
+    private val appUID: String,
+    private val accessType: AccessType? = AccessType.OFFLINE,
 ) {
 
     private var tabClient: CustomTabsClient? = null
@@ -203,7 +204,7 @@ class InfomaniakLogin(
     private fun generateUrl(codeChallenge: String): String {
         return loginUrl + "authorize" +
                 "?response_type=$DEFAULT_RESPONSE_TYPE" +
-                "&access_type=$DEFAULT_ACCESS_TYPE" +
+                (if (accessType == null) "" else "&access_type=${accessType.apiValue}") +
                 "&client_id=$clientID" +
                 "&redirect_uri=${getRedirectURI()}" +
                 "&code_challenge_method=$DEFAULT_HASH_MODE_SHORT" +
@@ -255,13 +256,6 @@ class InfomaniakLogin(
         }
     }
 
-    enum class ErrorStatus {
-        SERVER,
-        AUTH,
-        CONNECTION,
-        UNKNOWN;
-    }
-
     suspend fun getToken(
         okHttpClient: OkHttpClient,
         code: String,
@@ -294,10 +288,11 @@ class InfomaniakLogin(
         val formBuilder: MultipartBody.Builder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("grant_type", "password")
-            .addFormDataPart("access_type", DEFAULT_ACCESS_TYPE)
             .addFormDataPart("client_id", clientID)
             .addFormDataPart("username", username)
             .addFormDataPart("password", password)
+
+        if (accessType != null) formBuilder.addFormDataPart("access_type", AccessType.OFFLINE.apiValue)
 
         getToken(
             okHttpClient = okHttpClient,
@@ -413,10 +408,20 @@ class InfomaniakLogin(
         val data: @RawValue Any? = null
     )
 
+    enum class ErrorStatus {
+        SERVER,
+        AUTH,
+        CONNECTION,
+        UNKNOWN,
+    }
+
+    enum class AccessType(val apiValue: String) {
+        OFFLINE("offline"),
+    }
+
     companion object {
         private const val CHROME_STABLE_PACKAGE = "com.android.chrome"
         private const val SERVICE_ACTION = "android.support.customtabs.action.CustomTabsService"
-        private const val DEFAULT_ACCESS_TYPE = "offline"
         private const val DEFAULT_HASH_MODE = "SHA-256"
         private const val DEFAULT_HASH_MODE_SHORT = "S256"
         private const val DEFAULT_LOGIN_URL = "https://login.infomaniak.com/"
