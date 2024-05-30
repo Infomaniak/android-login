@@ -19,7 +19,7 @@ import com.google.gson.JsonParser
 import kotlinx.android.parcel.RawValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MultipartBody
+import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -262,13 +262,12 @@ class InfomaniakLogin(
         onSuccess: (apiToken: ApiToken) -> Unit,
         onError: (error: ErrorStatus) -> Unit
     ) {
-        val formBuilder: MultipartBody.Builder = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("grant_type", "authorization_code")
-            .addFormDataPart("client_id", clientID)
-            .addFormDataPart("code", code)
-            .addFormDataPart("code_verifier", getCodeVerifier())
-            .addFormDataPart("redirect_uri", getRedirectURI())
+        val formBuilder: FormBody.Builder = FormBody.Builder()
+            .add("grant_type", "authorization_code")
+            .add("client_id", clientID)
+            .add("code", code)
+            .add("code_verifier", getCodeVerifier())
+            .add("redirect_uri", getRedirectURI())
 
         getToken(
             okHttpClient = okHttpClient,
@@ -285,14 +284,13 @@ class InfomaniakLogin(
         onSuccess: (apiToken: ApiToken) -> Unit,
         onError: (error: ErrorStatus) -> Unit
     ) {
-        val formBuilder: MultipartBody.Builder = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("grant_type", "password")
-            .addFormDataPart("client_id", clientID)
-            .addFormDataPart("username", username)
-            .addFormDataPart("password", password)
+        val formBuilder: FormBody.Builder = FormBody.Builder()
+            .add("grant_type", "password")
+            .add("client_id", clientID)
+            .add("username", username)
+            .add("password", password)
 
-        if (accessType != null) formBuilder.addFormDataPart("access_type", AccessType.OFFLINE.apiValue)
+        if (accessType != null) formBuilder.add("access_type", AccessType.OFFLINE.apiValue)
 
         getToken(
             okHttpClient = okHttpClient,

@@ -15,7 +15,13 @@ class MainActivity : AppCompatActivity() {
 
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
-    private lateinit var infomaniakLogin: InfomaniakLogin
+    private val infomaniakLogin: InfomaniakLogin by lazy {
+        InfomaniakLogin(
+            context = this@MainActivity,
+            clientID = CLIENT_ID_EXEMPLE,
+            appUID = APPLICATION_ID_EXEMPLE,
+        )
+    }
 
     private val createAccountResultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -32,12 +38,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
         setContentView(root)
-
-        infomaniakLogin = InfomaniakLogin(
-            context = this@MainActivity,
-            clientID = CLIENT_ID_EXEMPLE,
-            appUID = APPLICATION_ID_EXEMPLE,
-        )
 
         infomaniakLogin.checkResponse(
             intent = intent,
