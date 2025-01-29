@@ -9,6 +9,8 @@ import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
 import com.infomaniak.login.example.databinding.ActivityLoginBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
@@ -31,35 +33,44 @@ class LoginActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val okHttpClient = OkHttpClient.Builder().build()
 
-                    infomaniakLogin.getToken(okHttpClient, it,
-                        { apiToken ->
-                            getTokenStatus.text = "${apiToken.userId} ${apiToken.accessToken}"
-
-                            btnDeconnect.apply {
-                                isVisible = true
-                                setOnClickListener { infomaniakLogin.deconnect(okHttpClient, apiToken) }
-                            }
-                        }, { error ->
-                            when (error) {
-                                InfomaniakLogin.ErrorStatus.SERVER -> getTokenStatus.text = "Server error"
-                                else -> getTokenStatus.text = "Error"
-                            }
-                        }
-                    )
+                    val tokenResult = infomaniakLogin.getToken(okHttpClient, code = it)
+                    Dispatchers.Main {
+                        updateUi(tokenResult, infomaniakLogin, okHttpClient)
+                    }
                 }
             }
         }
     }
 
-    private fun InfomaniakLogin.deconnect(okHttpClient: OkHttpClient, token: ApiToken) = with(binding) {
+    private fun ActivityLoginBinding.updateUi(
+        tokenResult: InfomaniakLogin.TokenResult,
+        infomaniakLogin: InfomaniakLogin,
+        okHttpClient: OkHttpClient,
+    ) {
+        if (tokenResult is InfomaniakLogin.TokenResult.Success) {
+            val apiToken = tokenResult.apiToken
+            getTokenStatus.text = "${apiToken.userId} ${apiToken.accessToken}"
+
+            btnDeconnect.apply {
+                isVisible = true
+                setOnClickListener { infomaniakLogin.logout(okHttpClient, apiToken) }
+            }
+        } else {
+            when ((tokenResult as InfomaniakLogin.TokenResult.Error).errorStatus) {
+                InfomaniakLogin.ErrorStatus.SERVER -> getTokenStatus.text = "Server error"
+                else -> getTokenStatus.text = "Error"
+            }
+        }
+    }
+
+    private fun InfomaniakLogin.logout(okHttpClient: OkHttpClient, token: ApiToken) = with(binding) {
         lifecycleScope.launch {
-            deleteToken(okHttpClient, token,
-                {
-                    deleteTokenStatus.text = "Delete token success"
-                }, { error ->
-                    deleteTokenStatus.text = "Error in token deletion : ${error.name}"
-                }
-            )
+            val errorStatus = Dispatchers.Default { deleteToken(okHttpClient, token) }
+            if (errorStatus == null) {
+                deleteTokenStatus.text = "Delete token success"
+            } else {
+                deleteTokenStatus.text = "Error in token deletion : ${errorStatus.name}"
+            }
         }
     }
 }
