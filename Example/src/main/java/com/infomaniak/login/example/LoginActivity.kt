@@ -63,11 +63,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun InfomaniakLogin.logout(okHttpClient: OkHttpClient, token: ApiToken) = with(binding) {
         lifecycleScope.launch {
-            val errorStatus = deleteToken(okHttpClient, token)
-            if (errorStatus == null) {
-                deleteTokenStatus.text = "Delete token success"
-            } else {
-                deleteTokenStatus.text = "Error in token deletion : ${errorStatus.name}"
+            when (val errorStatus = deleteToken(okHttpClient, token)) {
+                null -> deleteTokenStatus.text = "Delete token success"
+                else -> deleteTokenStatus.text = "Error in token deletion : ${errorStatus.name}"
             }
         }
     }
