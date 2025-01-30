@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             infomaniakLogin.startCreateAccountWebView(
                 resultLauncher = createAccountResultLauncher,
                 createAccountUrl = "https://welcome.infomaniak.com/signup/ikmail?app=true",
-                successHost = "mail.infomaniak.com",
+                successHost = "ksuite.infomaniak.com", // Before it was mail.infomaniak.com
                 cancelHost = "welcome.infomaniak.com",
             )
         }
