@@ -9,8 +9,6 @@ import com.infomaniak.lib.login.InfomaniakLogin
 import com.infomaniak.login.example.BuildConfig.APPLICATION_ID_EXEMPLE
 import com.infomaniak.login.example.BuildConfig.CLIENT_ID_EXEMPLE
 import com.infomaniak.login.example.databinding.ActivityLoginBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
@@ -34,9 +32,7 @@ class LoginActivity : AppCompatActivity() {
                     val okHttpClient = OkHttpClient.Builder().build()
 
                     val tokenResult = infomaniakLogin.getToken(okHttpClient, code = it)
-                    Dispatchers.Main {
-                        updateUi(tokenResult, infomaniakLogin, okHttpClient)
-                    }
+                    updateUi(tokenResult, infomaniakLogin, okHttpClient)
                 }
             }
         }
@@ -68,12 +64,10 @@ class LoginActivity : AppCompatActivity() {
     private fun InfomaniakLogin.logout(okHttpClient: OkHttpClient, token: ApiToken) = with(binding) {
         lifecycleScope.launch {
             val errorStatus = deleteToken(okHttpClient, token)
-            Dispatchers.Main {
-                if (errorStatus == null) {
-                    deleteTokenStatus.text = "Delete token success"
-                } else {
-                    deleteTokenStatus.text = "Error in token deletion : ${errorStatus.name}"
-                }
+            if (errorStatus == null) {
+                deleteTokenStatus.text = "Delete token success"
+            } else {
+                deleteTokenStatus.text = "Error in token deletion : ${errorStatus.name}"
             }
         }
     }
