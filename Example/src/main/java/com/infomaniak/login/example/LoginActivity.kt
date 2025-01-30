@@ -47,16 +47,18 @@ class LoginActivity : AppCompatActivity() {
         infomaniakLogin: InfomaniakLogin,
         okHttpClient: OkHttpClient,
     ) {
-        if (tokenResult is InfomaniakLogin.TokenResult.Success) {
-            val apiToken = tokenResult.apiToken
-            getTokenStatus.text = "${apiToken.userId} ${apiToken.accessToken}"
+        when (tokenResult) {
+            is InfomaniakLogin.TokenResult.Success -> {
+                val apiToken = tokenResult.apiToken
+                getTokenStatus.text = "${apiToken.userId} ${apiToken.accessToken}"
 
-            btnDeconnect.apply {
-                isVisible = true
-                setOnClickListener { infomaniakLogin.logout(okHttpClient, apiToken) }
+                btnLogout.apply {
+                    isVisible = true
+                    setOnClickListener { infomaniakLogin.logout(okHttpClient, apiToken) }
+                }
             }
-        } else {
-            when ((tokenResult as InfomaniakLogin.TokenResult.Error).errorStatus) {
+
+            is InfomaniakLogin.TokenResult.Error -> when (tokenResult.errorStatus) {
                 InfomaniakLogin.ErrorStatus.SERVER -> getTokenStatus.text = "Server error"
                 else -> getTokenStatus.text = "Error"
             }
