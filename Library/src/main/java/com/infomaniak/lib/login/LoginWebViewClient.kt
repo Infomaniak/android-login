@@ -87,7 +87,7 @@ open class LoginWebViewClient(
     }
 
     override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
-        if (isValidUrl(request?.url.toString())) errorResult(HTTP_ERROR_CODE)
+        if (!isValidUrl(request?.url.toString())) errorResult(HTTP_ERROR_CODE)
     }
 
     private fun isValidUrl(inputUrl: String?): Boolean {
