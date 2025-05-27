@@ -1,6 +1,8 @@
 package com.infomaniak.login.example
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -32,6 +34,40 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
         setContentView(root)
+        packageManager.getPackageInfo("com.infomaniak.drive", PackageManager.GET_SIGNATURES)?.signatures?.let {
+            println("We have ${it.size} signatures:")
+            it.forEachIndexed { index, signature ->
+                val number = index + 1
+                println("$number: ${signature.toCharsString()}")
+            }
+        }
+
+        if (SDK_INT >= 28) packageManager.getPackageInfo("com.infomaniak.drive", PackageManager.GET_SIGNING_CERTIFICATES)?.signingInfo?.let { signingInfo ->
+            if (SDK_INT >= 35) {
+                println("[New API]: We have ${signingInfo.publicKeys.size} public keys:")
+                signingInfo.publicKeys.forEachIndexed { index, key ->
+                    val number = index + 1
+                    println("$number: [${key.algorithm}, ${key.format}] -> ${key.encoded}")
+                }
+            }
+            if (signingInfo.hasMultipleSigners()) {
+                println("[New API]: We have ${signingInfo.apkContentsSigners.size} signatures:")
+                signingInfo.apkContentsSigners.forEachIndexed { index, signature ->
+                    val number = index + 1
+                    println("$number: ${signature.toCharsString()}")
+                }
+            } else {
+                println("[New API]: We have ${signingInfo.signingCertificateHistory.size} historical signatures:")
+                if (signingInfo.hasPastSigningCertificates()) {
+                    println("Note: We have past signing certificates")
+                }
+                signingInfo.signingCertificateHistory.forEachIndexed { index, signature ->
+                    val number = index + 1
+                    println("$number: ${signature.toCharsString()}")
+                }
+            }
+        }
+        println("Done")
 
         infomaniakLogin = InfomaniakLogin(
             context = this@MainActivity,
