@@ -12,7 +12,7 @@ import com.infomaniak.login.example.databinding.ActivityLoginBinding
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
-class LoginActivity : AppCompatActivity() {
+class LoggedInActivity : AppCompatActivity() {
 
     private val binding: ActivityLoginBinding by lazy { ActivityLoginBinding.inflate(layoutInflater) }
 
@@ -23,7 +23,7 @@ class LoginActivity : AppCompatActivity() {
         if (intent != null) {
             intent.getStringExtra("code")?.let {
                 val infomaniakLogin = InfomaniakLogin(
-                    context = this@LoginActivity,
+                    context = this@LoggedInActivity,
                     clientID = CLIENT_ID_EXEMPLE,
                     appUID = APPLICATION_ID_EXEMPLE,
                 )

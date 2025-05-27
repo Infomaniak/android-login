@@ -49,7 +49,7 @@ class FragmentMainFragment : Fragment() {
 
                 if (!code.isNullOrBlank()) {
                     Log.d("WebView code", code)
-                    val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                    val intent = Intent(requireContext(), LoggedInActivity::class.java).apply {
                         putExtra("code", code)
                     }
                     startActivity(intent)

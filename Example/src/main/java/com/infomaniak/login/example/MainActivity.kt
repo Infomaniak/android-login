@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         infomaniakLogin.checkResponse(
             intent = intent,
             onSuccess = { code ->
-                val intent = Intent(this@MainActivity, LoginActivity::class.java).apply {
+                val intent = Intent(this@MainActivity, LoggedInActivity::class.java).apply {
                     putExtra("code", code)
                 }
                 startActivity(intent)
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (!code.isNullOrBlank()) {
                     Log.d("WebView code", code)
-                    val intent = Intent(this@MainActivity, LoginActivity::class.java).apply {
+                    val intent = Intent(this@MainActivity, LoggedInActivity::class.java).apply {
                         putExtra("code", code)
                     }
                     startActivity(intent)

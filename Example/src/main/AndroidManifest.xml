@@ -40,7 +40,7 @@
 
         <activity android:name=".FragmentMainActivity" />
 
-        <activity android:name=".LoginActivity" />
+        <activity android:name=".LoggedInActivity" />
 
         <activity
             android:name="com.infomaniak.lib.login.WebViewLoginActivity"
