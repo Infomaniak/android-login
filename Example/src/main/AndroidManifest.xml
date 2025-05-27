@@ -9,6 +9,7 @@
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
+        <package android:name="com.infomaniak.drive"/>
     </queries>
 
     <application

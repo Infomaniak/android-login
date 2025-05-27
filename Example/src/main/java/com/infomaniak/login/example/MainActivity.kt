@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) = with(binding) {
         super.onCreate(savedInstanceState)
         setContentView(root)
+        printInfomaniakAppCertificatesInfoForExperiments()
 
         infomaniakLogin = InfomaniakLogin(
             context = this@MainActivity,
