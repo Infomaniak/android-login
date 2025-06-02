@@ -55,6 +55,8 @@ dependencies {
 
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.lifecycle:lifecycle-service:2.9.0")
+
     val splittiesVersion = "3.0.0"
     implementation("com.louiscad.splitties:splitties-mainthread:$splittiesVersion")
 
