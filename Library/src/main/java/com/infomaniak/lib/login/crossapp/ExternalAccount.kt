@@ -1,6 +1,6 @@
 /*
  * Infomaniak Login - Android
- * Copyright (C) 2025 Infomaniak Network SA
+ * Copyright (C) 2025-2025 Infomaniak Network SA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,26 @@
  * limitations under the License.
  */
 
+@file:OptIn(InternalSerializationApi::class) // False positive, we're not actually using internal APIs.
+
 package com.infomaniak.lib.login.crossapp
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoNumber
 
-sealed interface CrossAppLogin {
-
-    @ExperimentalSerializationApi
-    val accounts: Flow<List<ExternalAccount>>
-
-}
+@ExperimentalSerializationApi
+@Serializable
+data class ExternalAccount(
+    @ProtoNumber(1)
+    val fullName: String,
+    @ProtoNumber(2)
+    val email: String,
+    @ProtoNumber(3)
+    val avatarUriString: String?,
+    @ProtoNumber(4)
+    val isCurrentlySelectedInAnApp: Boolean,
+    @ProtoNumber(5)
+    val tokens: Set<String>
+)

@@ -3,6 +3,7 @@ plugins {
     kotlin("android")
     id("maven-publish")
     id("kotlin-parcelize")
+    kotlin("plugin.serialization")
 }
 
 group = "com.github.Infomaniak"
@@ -49,6 +50,8 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.8.1")
 
     implementation("androidx.browser:browser:1.8.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
