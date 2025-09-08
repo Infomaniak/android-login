@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+def javaVersion = rootProject.ext.javaVersion as JavaVersion
+
 android {
 
     namespace 'com.infomaniak.login.example'
@@ -32,12 +34,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility rootProject.ext.java_version
-        targetCompatibility rootProject.ext.java_version
+        sourceCompatibility javaVersion
+        targetCompatibility javaVersion
     }
 
     kotlinOptions {
-        jvmTarget = rootProject.ext.java_version
+        jvmTarget = javaVersion
     }
 
     buildFeatures { viewBinding true }
@@ -46,14 +48,14 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
-
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
-
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-
     implementation project(path: ':Library')
+
+    implementation libs.kotlin.stdlib.jdk8
+    implementation libs.kotlinx.coroutines.android
+
+    implementation libs.appcompat
+    implementation libs.constraintlayout
+    implementation libs.lifecycle.runtime.ktx
+
+    implementation libs.okhttp
 }
