@@ -91,7 +91,7 @@ open class LoginWebViewClient(
     }
 
     private fun isValidUrl(inputUrl: String?): Boolean {
-        if (inputUrl == null || onAuthResponse(Uri.parse(inputUrl))) return false
+        if (inputUrl == null || onAuthResponse(inputUrl.toUri()) || inputUrl.startsWith("intent://")) return false
         val baseUrlHost = baseUrl.toHttpUrl().host
         val inputUrlHost = inputUrl.toHttpUrl().host
 
