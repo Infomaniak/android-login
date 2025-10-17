@@ -37,6 +37,7 @@ import com.infomaniak.lib.login.InfomaniakLogin.Companion.CODE_TAG
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.ERROR_ACCESS_DENIED
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.ERROR_CODE_TAG
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.ERROR_TRANSLATED_TAG
+import com.infomaniak.lib.login.InfomaniakLogin.Companion.HTTP_ERROR_CODE
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.SSL_ERROR_CODE
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.WEBVIEW_ERROR_CODE_CONNECTION_REFUSED
 import com.infomaniak.lib.login.InfomaniakLogin.Companion.WEBVIEW_ERROR_CODE_INTERNET_DISCONNECTED
@@ -74,12 +75,15 @@ open class LoginWebViewClient(
     }
 
     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-        if (request.isForMainFrame && isValidUrl(request.url.toString())) errorResult(error.description.toString())
+        if (request.shouldFinishOnError()) errorResult(error.description.toString())
     }
 
-    override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
-        InfomaniakLogin.sentryCallback?.invoke("${request?.url.toString()} ${request?.method} ${errorResponse?.statusCode}")
+    override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, errorResponse: WebResourceResponse) {
+        if (request.shouldFinishOnError()) errorResult(HTTP_ERROR_CODE)
+        InfomaniakLogin.sentryCallback?.invoke("${request.url} ${request.method} ${errorResponse.statusCode}")
     }
+
+    private fun WebResourceRequest.shouldFinishOnError(): Boolean = isForMainFrame && isValidUrl(this.url.toString())
 
     private fun isValidUrl(inputUrl: String?): Boolean {
         if (inputUrl == null || onAuthResponse(inputUrl.toUri()) || inputUrl.startsWith("intent://")) return false
