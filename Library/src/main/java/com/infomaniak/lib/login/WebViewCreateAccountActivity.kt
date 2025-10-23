@@ -98,7 +98,13 @@ class WebViewCreateAccountActivity : AppCompatActivity() {
                     openUrl(url.toString())
                     cancelResult()
                 }
-                else -> openUrl(url.toString())
+                else -> {
+                    if (isInfomaniakUrl(url.toString())) {
+                        view.loadUrl(url.toString())
+                    } else {
+                        openUrl(url.toString())
+                    }
+                }
             }
             return true
         }
