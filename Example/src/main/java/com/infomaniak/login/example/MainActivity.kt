@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
             context = this@MainActivity,
             clientID = CLIENT_ID_EXEMPLE,
             appUID = APPLICATION_ID_EXEMPLE,
+            sentryCallback = { _, _ -> },
         )
 
         infomaniakLogin.checkResponse(

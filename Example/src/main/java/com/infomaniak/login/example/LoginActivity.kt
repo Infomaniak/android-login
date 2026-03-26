@@ -26,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
                     context = this@LoginActivity,
                     clientID = CLIENT_ID_EXEMPLE,
                     appUID = APPLICATION_ID_EXEMPLE,
+                    sentryCallback = { _, _ -> },
                 )
 
                 lifecycleScope.launch {
