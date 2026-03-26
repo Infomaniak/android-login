@@ -37,6 +37,7 @@ class FragmentMainFragment : Fragment() {
             context = requireContext(),
             clientID = CLIENT_ID_EXEMPLE,
             appUID = APPLICATION_ID_EXEMPLE,
+            sentryCallback = { _, _ -> },
         )
 
         binding.webViewLoginButton.setOnClickListener { infomaniakLogin.startWebViewLogin(webViewLoginResultLauncher) }
